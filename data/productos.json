@@ -1,0 +1,112 @@
+[
+  {
+    "id": 1,
+    "title": "Conjunto de lencería encaje negro",
+    "description": "Conjunto de lencería de encaje negro con detalles florales.",
+    "code": "LEN001",
+    "price": 49.99,
+    "status": true,
+    "stock": 20,
+    "category": "Lencería",
+    "thumbnails": []
+  },
+  {
+    "id": 2,
+    "title": "Bata de satén rojo",
+    "description": "Bata corta de satén en color rojo, suave y sedosa.",
+    "code": "LEN002",
+    "price": 39.99,
+    "status": true,
+    "stock": 15,
+    "category": "Lencería",
+    "thumbnails": []
+  },
+  {
+    "id": 3,
+    "title": "Sujetador balconette blanco",
+    "description": "Sujetador balconette con encaje blanco y tirantes ajustables.",
+    "code": "LEN003",
+    "price": 29.99,
+    "status": true,
+    "stock": 30,
+    "category": "Lencería",
+    "thumbnails": []
+  },
+  {
+    "id": 4,
+    "title": "Braga alta con encaje rosa",
+    "description": "Braga alta en color rosa con detalles de encaje.",
+    "code": "LEN004",
+    "price": 19.99,
+    "status": true,
+    "stock": 50,
+    "category": "Lencería",
+    "thumbnails": []
+  },
+  {
+    "id": 5,
+    "title": "Body de encaje negro",
+    "description": "Body ajustado de encaje negro, perfecto para ocasiones especiales.",
+    "code": "LEN005",
+    "price": 59.99,
+    "status": true,
+    "stock": 25,
+    "category": "Lencería",
+    "thumbnails": []
+  },
+  {
+    "id": 6,
+    "title": "Conjunto de lencería encaje azul",
+    "description": "Conjunto de sujetador y braga de encaje azul celeste.",
+    "code": "LEN006",
+    "price": 49.99,
+    "status": true,
+    "stock": 18,
+    "category": "Lencería",
+    "thumbnails": []
+  },
+  {
+    "id": 7,
+    "title": "Panty de satén negro",
+    "description": "Panty de satén negro con detalles de lazo en la parte trasera.",
+    "code": "LEN007",
+    "price": 24.99,
+    "status": true,
+    "stock": 40,
+    "category": "Lencería",
+    "thumbnails": []
+  },
+  {
+    "id": 8,
+    "title": "Conjunto de lencería de malla rojo",
+    "description": "Conjunto de lencería de malla transparente en color rojo intenso.",
+    "code": "LEN008",
+    "price": 44.99,
+    "status": true,
+    "stock": 22,
+    "category": "Lencería",
+    "thumbnails": []
+  },
+  {
+    "id": 9,
+    "title": "Body de encaje blanco",
+    "description": "Body de encaje blanco con tirantes cruzados en la espalda.",
+    "code": "LEN009",
+    "price": 54.99,
+    "status": true,
+    "stock": 10,
+    "category": "Lencería",
+    "thumbnails": []
+  },
+  {
+    "id": 10,
+    "title": "Bata corta de encaje púrpura",
+    "description": "Bata corta con detalles de encaje en color púrpura elegante.",
+    "code": "LEN010",
+    "price": 39.99,
+    "status": true,
+    "stock": 12,
+    "category": "Lencería",
+    "thumbnails": []
+  }
+]
