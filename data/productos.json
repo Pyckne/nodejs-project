@@ -103,10 +103,10 @@
     "title": "Bata corta de encaje púrpura",
     "description": "Bata corta con detalles de encaje en color púrpura elegante.",
     "code": "LEN010",
-    "price": 39.99,
-    "status": true,
-    "stock": 12,
+    "price": "40",
+    "stock": "12",
     "category": "Lencería",
+    "status": true,
     "thumbnails": []
   }
 ]

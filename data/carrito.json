@@ -13,6 +13,10 @@
       {
         "product": 5,
         "quantity": 1
+      },
+      {
+        "product": 10,
+        "quantity": 1
       }
     ]
   },
@@ -21,7 +25,7 @@
     "products": [
       {
         "product": 10,
-        "quantity": 2
+        "quantity": 3
       }
     ]
   },
