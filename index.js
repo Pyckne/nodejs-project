@@ -57,6 +57,9 @@ io.on('connection', (socket) => {
 
     // Enviar productos actualizados a todos los clientes conectados
     io.emit('updateProducts', productos);
+
+    // Mensaje de consola
+    console.log(`Producto agregado: ${JSON.stringify(product)}`);
   });
 
   // Eliminar producto
@@ -68,5 +71,8 @@ io.on('connection', (socket) => {
 
     // Enviar productos actualizados a todos los clientes conectados
     io.emit('updateProducts', productos);
+    
+    // Mensaje de consola
+    console.log(`Producto eliminado: ${productId}`);
   });
 });
