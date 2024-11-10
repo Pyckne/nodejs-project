@@ -1,6 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const Product = require('../models/Product');
 const router = express.Router();
 
 const productsFilePath = path.join(__dirname, '../data/productos.json');
@@ -12,17 +13,44 @@ const readProductsFile = () => {
 };
 
 // GET Obtener todos los productos con límite
-router.get('/', (req, res) => {
-  const limit = parseInt(req.query.limit);
-  let products = readProductsFile();
+router.post('/', async (req, res) => {
+  const { title, description, price, stock, category, thumbnails, code } = req.body;
 
-  // Aplicar límite si se proporciona
-  if (limit && limit > 0) {
-    products = products.slice(0, limit);
+  try {
+    // Validar campos obligatorios
+    if (!title || !description || !price || !stock || !category || !code) {
+      return res.status(400).json({ message: 'Todos los campos son obligatorios excepto thumbnails' });
+    }
+
+    // Verificar si el código ya existe en la base de datos
+    const existingProduct = await Product.findOne({ code });
+    if (existingProduct) {
+      return res.status(400).json({ message: 'El código del producto ya existe' });
+    }
+
+    // Crear el nuevo producto
+    const newProduct = new Product({
+      title,
+      description,
+      price,
+      status: true, // Status por defecto a true
+      stock,
+      category,
+      thumbnails,
+      code
+    });
+
+    // Guardar el producto
+    await newProduct.save();  
+
+    // Devolver el nuevo producto creado
+    res.status(201).json(newProduct);
+  } catch (error) {
+    console.error('Error al crear el producto:', error);
+    res.status(500).json({ message: 'Error al crear el producto' });
   }
-
-  res.json(products);
 });
+
 
 // GET PID Obtener un producto por ID
 router.get('/:pid', (req, res) => {

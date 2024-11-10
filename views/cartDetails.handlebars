@@ -1,0 +1,14 @@
+<!-- cartDetails.handlebars -->
+<h1>Detalles del Carrito</h1>
+
+<ul>
+  {{#each products}}
+    <li>
+      <h2>{{title}}</h2>
+      <p>Precio: ${{price}}</p>
+      <p>Cantidad: {{quantity}}</p>
+    </li>
+  {{/each}}
+</ul>
+
+<a href="/home">Volver a la tienda</a>

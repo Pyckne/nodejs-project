@@ -1,26 +1,53 @@
 const express = require('express');
+const connectDB = require('./config/dbConfig');
 const { create } = require('express-handlebars');
 const path = require('path');
-const fs = require('fs'); // Importar file system para manejar productos.json
+const session = require('express-session');
+const Cart = require('./models/Cart');
 
 // Importar los routers
 const viewsRouter = require('./routers/viewsRouter');
 const productsRouter = require('./routers/productsRouter');
 const cartsRouter = require('./routers/cartsRouter');
 
+// Conectar a la base de datos
 const app = express();
 const PORT = 8080;
 
+connectDB();
+
 // Configuración de Handlebars
+const handlebars = require('express-handlebars');
 const hbs = create({ extname: '.handlebars' });
 app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'views'));
 
 // Middleware
+app.use(session({
+  secret: 'mySecret',
+  resave: false,
+  saveUninitialized: true,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Middleware para crear un carrito si no existe
+app.use(async (req, res, next) => {
+  if (!req.session.cartId) {
+    // Si no hay un cartId en la sesión, creamos un carrito vacío
+    const Cart = require('./models/Cart');  // Asegúrate de que el modelo de carrito esté importado
+    try {
+      const newCart = await Cart.create({ products: [] }); // Crear carrito vacío
+      req.session.cartId = newCart._id.toString();  // Guardar el cartId en la sesión
+      console.log('Nuevo carrito creado:', newCart._id);
+    } catch (error) {
+      console.error('Error al crear el carrito:', error);
+    }
+  }
+  next();
+});
 
 // Rutas
 app.use('/', viewsRouter);
@@ -35,44 +62,41 @@ const server = app.listen(PORT, () => {
 // WebSocket con Socket.io
 const { Server } = require('socket.io');
 const io = new Server(server);
+const Product = require('./models/Product'); // Importar el modelo de Product
 
-// Cargar productos desde productos.json
-const productsFilePath = path.join(__dirname, 'data', 'productos.json');
-let productos = JSON.parse(fs.readFileSync(productsFilePath, 'utf-8'));
-
-io.on('connection', (socket) => {
+io.on('connection', async (socket) => {
   console.log('Cliente conectado');
 
-  // Enviar lista de productos cuando un cliente se conecta
+  // Obtener la lista de productos desde MongoDB y enviarla al cliente
+  const productos = await Product.find();
   socket.emit('updateProducts', productos);
 
-  // Agregar nuevo producto
-  socket.on('addProduct', (newProduct) => {
-    const newId = productos.length ? productos[productos.length - 1].id + 1 : 1; // Generar ID único
-    const product = { id: newId, ...newProduct, status: true, thumbnails: [] };
-    productos.push(product);
+  // Agregar nuevo producto a MongoDB
+  socket.on('addProduct', async (newProduct) => {
+    try {
+      const product = new Product({ ...newProduct, status: true });
+      await product.save();
 
-    // Actualizar archivo productos.json
-    fs.writeFileSync(productsFilePath, JSON.stringify(productos, null, 2));
+      const productosActualizados = await Product.find();
+      io.emit('updateProducts', productosActualizados);
 
-    // Enviar productos actualizados a todos los clientes conectados
-    io.emit('updateProducts', productos);
-
-    // Mensaje de consola
-    console.log(`Producto agregado: ${JSON.stringify(product)}`);
+      console.log(`Producto agregado: ${JSON.stringify(product)}`);
+    } catch (error) {
+      console.error('Error al agregar producto:', error);
+    }
   });
 
-  // Eliminar producto
-  socket.on('deleteProduct', (productId) => {
-    productos = productos.filter(product => product.id !== parseInt(productId));
+  // Eliminar producto de MongoDB
+  socket.on('deleteProduct', async (productId) => {
+    try {
+      await Product.findByIdAndDelete(productId);
 
-    // Actualizar archivo productos.json
-    fs.writeFileSync(productsFilePath, JSON.stringify(productos, null, 2));
+      const productosActualizados = await Product.find();
+      io.emit('updateProducts', productosActualizados);
 
-    // Enviar productos actualizados a todos los clientes conectados
-    io.emit('updateProducts', productos);
-    
-    // Mensaje de consola
-    console.log(`Producto eliminado: ${productId}`);
+      console.log(`Producto eliminado: ${productId}`);
+    } catch (error) {
+      console.error('Error al eliminar producto:', error);
+    }
   });
 });
