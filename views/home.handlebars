@@ -7,7 +7,7 @@
     <title>Lista de Productos</title>
 </head>
 <h1>Productos</h1>
-
+<p>Cart ID: {{cartId}}</p>
 <div class="product-list">
   {{#each products}}
     <div class="product">
@@ -17,9 +17,10 @@
       <p>Descripción: {{description}}</p>
       <p>Stock: {{stock}}</p>
       <a href="/products/{{id}}">Ver detalles</a>
-        <form action="/carts/{{cartId}}/products/{{this._id}}" method="POST">
-          <button type="submit">Agregar al carrito</button>
-        </form>
+      <!-- Corregido: usando ../cartId para acceder al contexto padre -->
+      <form action="/carts/{{../cartId}}/products/{{id}}" method="POST">
+        <button type="submit">Agregar al carrito</button>
+      </form>
     </div>
   {{/each}}
 </div>

@@ -51,8 +51,8 @@ app.use(async (req, res, next) => {
 
 // Rutas
 app.use('/', viewsRouter);
-app.use('/api/products', productsRouter);
-app.use('/api/carts', cartsRouter);
+app.use('/products', productsRouter);
+app.use('/carts', cartsRouter);
 
 // Iniciar el servidor
 const server = app.listen(PORT, () => {

@@ -6,13 +6,12 @@ const router = express.Router();
 // POST Crear un nuevo carrito
 router.post('/', async (req, res) => {
   try {
-    console.log("Creando un nuevo carrito...");
-    const newCart = await Cart.create({ products: [] });  // Crear carrito vacío
-    req.session.cartId = newCart._id.toString();  // Guardar cartId en la sesión
-    res.redirect(`/carts/${newCart._id}`);  // Redirigir al carrito recién creado
+    const newCart = await Cart.create({});
+    req.session.cartId = newCart._id.toString();
+    res.status(201).json({ message: 'Carrito creado', cartId: newCart._id });
   } catch (error) {
     console.error('Error al crear carrito:', error);
-    res.status(500).send('Error al crear carrito');
+    res.status(500).json({ message: 'Error al crear carrito' });
   }
 });
 
@@ -36,31 +35,38 @@ router.get('/:cid', async (req, res) => {
 
 // POST Agregar un producto al carrito
 router.post('/:cid/products/:pid', async (req, res) => {
-  const { cid, pid } = req.params;
-
   try {
-    const cart = await Cart.findById(cid);  // Buscar carrito por ID
+    const { cid, pid } = req.params;
+
+    console.log('Cart ID:', cid);
+    console.log('Product ID:', pid);
+
+    // Buscar el carrito
+    const cart = await Cart.findById(cid);
     if (!cart) {
       return res.status(404).json({ message: 'Carrito no encontrado' });
     }
 
-    const product = await Product.findById(pid);  // Buscar producto por ID
+    // Buscar el producto
+    const product = await Product.findById(pid);
     if (!product) {
       return res.status(404).json({ message: 'Producto no encontrado' });
     }
 
     // Verificar si el producto ya está en el carrito
-    const productIndex = cart.products.findIndex(p => p.product.toString() === pid);
-    if (productIndex !== -1) {
-      // Si el producto está en el carrito, incrementar la cantidad
-      cart.products[productIndex].quantity += 1;
+    const existingProduct = cart.products.find(item => item.product.equals(pid));
+    if (existingProduct) {
+      // Incrementar la cantidad si ya existe
+      existingProduct.quantity += 1;
     } else {
-      // Si el producto no está en el carrito, agregarlo
+      // Agregar nuevo producto al carrito
       cart.products.push({ product: pid, quantity: 1 });
     }
 
-    await cart.save();  // Guardar cambios en el carrito
-    res.redirect(`/carts/${cid}`);  // Redirigir al carrito actualizado
+    // Guardar el carrito actualizado
+    await cart.save();
+
+    res.redirect(`/carts/${cid}`);
   } catch (error) {
     console.error('Error al agregar producto al carrito:', error);
     res.status(500).json({ message: 'Error al agregar producto al carrito' });

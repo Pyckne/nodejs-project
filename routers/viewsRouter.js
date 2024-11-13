@@ -5,11 +5,12 @@ const Cart = require('../models/Cart');
 
 router.get('/home', async (req, res) => {
   try {
-    const filter = {};  // Filtro para los productos
-    const options = { page: 1, limit: 10 };  // Paginación
+    const filter = {};
+    const options = { page: 1, limit: 10 };
     const products = await Productos.paginate(filter, options);
 
-    const cartId = req.session.cartId;  // Obtener el cartId de la sesión
+    const cartId = req.session.cartId || ''; // Agregar || '' para evitar undefined
+    console.log('Cart ID en la vista home:', cartId);
 
     const productsModified = products.docs.map(product => ({
       id: product._id.toString(),
@@ -21,8 +22,8 @@ router.get('/home', async (req, res) => {
     }));
 
     res.render('home', {
-      products: productsModified,  // Los productos en la página
-      cartId,                      // Pasar cartId para usarlo en la vista
+      cartId,
+      products: productsModified,
       totalPages: products.totalPages,
       page: products.page,
       hasNextPage: products.hasNextPage,
@@ -72,28 +73,23 @@ router.get('/realtimeproducts', (req, res) => {
 // Ruta para ver los detalles de un carrito específico
 router.get('/carts/:cid', async (req, res) => {
   try {
-    const cartId = req.params.cid;
-    const cart = await Cart.findById(cartId).populate('products.product');
+    const { cid } = req.params;
+    const cart = await Cart.findById(cid).populate('products.product');
 
     if (!cart) {
       return res.status(404).send('Carrito no encontrado');
     }
 
-    // Mapear los productos para que sean propiedades propias
-    const productsInCart = cart.products.map(item => ({
-      id: item.product._id.toString(),
+    const productsModified = cart.products.map(item => ({
       title: item.product.title,
       price: item.product.price,
       quantity: item.quantity,
     }));
 
-    res.render('cartDetails', {
-      cartId,
-      products: productsInCart,
-    });
+    res.render('cartDetails', { products: productsModified });
   } catch (error) {
-    console.error('Error al obtener el carrito:', error);
-    res.status(500).send('Error al obtener el carrito');
+    console.error('Error al obtener detalles del carrito:', error);
+    res.status(500).send('Error al obtener detalles del carrito');
   }
 });
 

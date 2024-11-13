@@ -1,4 +1,3 @@
-{{!-- Vista para ver detalles de producto --}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,6 +9,7 @@
 
 <body>
 <!-- productDetails.handlebars -->
+<p>Cart id: {{cartId}}</p>
 <h1>{{product.title}}</h1>
 <p><strong>Precio:</strong> ${{product.price}}</p>
 <p><strong>Categoría:</strong> {{product.category}}</p>
@@ -17,9 +17,14 @@
 <p><strong>Stock:</strong> {{product.stock}}</p>
 
 <!-- Botón para agregar al carrito -->
-<form action="/carts/{{cartId}}/products/{{product.id}}" method="POST">
+<form id="addToCartForm" method="POST">
   <button type="submit">Agregar al carrito</button>
 </form>
+
+
+<script>
+  document.getElementById('addToCartForm').action = '/carts/' + '{{cartId}}' + '/products/' + '{{product.id}}';
+</script>
 </body>
 
 </html>
