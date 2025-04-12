@@ -92,5 +92,14 @@ router.get('/carts/:cid', async (req, res) => {
     res.status(500).send('Error al obtener detalles del carrito');
   }
 });
+// Vista de registro
+router.get('/register', (req, res) => {
+  res.render('register');
+});
+
+// Vista de login
+router.get('/login', (req, res) => {
+  res.render('login');
+});
 
 module.exports = router;

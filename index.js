@@ -3,12 +3,16 @@ const connectDB = require('./config/dbConfig');
 const { create } = require('express-handlebars');
 const path = require('path');
 const session = require('express-session');
+const cookieParser = require('cookie-parser'); // Necesario para JWT en cookies
+const passport = require('passport');
 const Cart = require('./models/Cart');
 
-// Importar los routers
+// Importar routers
 const viewsRouter = require('./routers/viewsRouter');
 const productsRouter = require('./routers/productsRouter');
 const cartsRouter = require('./routers/cartsRouter');
+const authRouter = require('./routers/authRouter'); // Nuevo: authRouter para login/register
+require('./config/passport')(passport); // Cargar estrategias de passport
 
 // Conectar a la base de datos
 const app = express();
@@ -23,24 +27,28 @@ app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'views'));
 
-// Middleware
+// Middlewares
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(cookieParser());
+
 app.use(session({
   secret: 'mySecret',
   resave: false,
   saveUninitialized: true,
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
 
-// Middleware para crear un carrito si no existe
+// Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Middleware para crear un carrito si no existe en la sesión
 app.use(async (req, res, next) => {
   if (!req.session.cartId) {
-    // Si no hay un cartId en la sesión, creamos un carrito vacío
-    const Cart = require('./models/Cart');  // Asegúrate de que el modelo de carrito esté importado
     try {
-      const newCart = await Cart.create({ products: [] }); // Crear carrito vacío
-      req.session.cartId = newCart._id.toString();  // Guardar el cartId en la sesión
+      const newCart = await Cart.create({ products: [] });
+      req.session.cartId = newCart._id.toString();
       console.log('Nuevo carrito creado:', newCart._id);
     } catch (error) {
       console.error('Error al crear el carrito:', error);
@@ -53,6 +61,7 @@ app.use(async (req, res, next) => {
 app.use('/', viewsRouter);
 app.use('/products', productsRouter);
 app.use('/carts', cartsRouter);
+app.use('/api/auth', authRouter); // Nuevo: ruta para login, register, logout, current
 
 // Iniciar el servidor
 const server = app.listen(PORT, () => {
@@ -62,16 +71,14 @@ const server = app.listen(PORT, () => {
 // WebSocket con Socket.io
 const { Server } = require('socket.io');
 const io = new Server(server);
-const Product = require('./models/Product'); // Importar el modelo de Product
+const Product = require('./models/Product');
 
 io.on('connection', async (socket) => {
   console.log('Cliente conectado');
 
-  // Obtener la lista de productos desde MongoDB y enviarla al cliente
   const productos = await Product.find();
   socket.emit('updateProducts', productos);
 
-  // Agregar nuevo producto a MongoDB
   socket.on('addProduct', async (newProduct) => {
     try {
       const product = new Product({ ...newProduct, status: true });
@@ -79,21 +86,17 @@ io.on('connection', async (socket) => {
 
       const productosActualizados = await Product.find();
       io.emit('updateProducts', productosActualizados);
-
       console.log(`Producto agregado: ${JSON.stringify(product)}`);
     } catch (error) {
       console.error('Error al agregar producto:', error);
     }
   });
 
-  // Eliminar producto de MongoDB
   socket.on('deleteProduct', async (productId) => {
     try {
       await Product.findByIdAndDelete(productId);
-
       const productosActualizados = await Product.find();
       io.emit('updateProducts', productosActualizados);
-
       console.log(`Producto eliminado: ${productId}`);
     } catch (error) {
       console.error('Error al eliminar producto:', error);
