@@ -4,6 +4,8 @@ const User = require('../models/User');
 const { hashPassword } = require('../utils/hash');
 const { generateToken } = require('../utils/jwt');
 const router = express.Router();
+const UserDTO = require('../dto/user.dto');
+const userRepository = require('../repositories/user.repository');
 
 // Registro
 router.post('/register', async (req, res) => {
@@ -54,16 +56,14 @@ router.post('/login', passport.authenticate('login', { session: false }), (req, 
 });
 
 // Usuario actual (/current)
-router.get('/current', passport.authenticate('jwt', { session: false }), (req, res) => {
-  const user = req.user;
-  res.json({
-    user: {
-      id: user._id,
-      name: `${user.first_name} ${user.last_name}`,
-      email: user.email,
-      role: user.role,
-    },
-  });
+router.get('/current', passport.authenticate('jwt', { session: false }), async (req, res) => {
+  try {
+    const user = await userRepository.getById(req.user._id);
+    const userDTO = new UserDTO(user);
+    res.json({ user: userDTO });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener usuario', error: error.message });
+  }
 });
 
 // Logout

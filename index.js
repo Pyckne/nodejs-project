@@ -11,7 +11,7 @@ const Cart = require('./models/Cart');
 const viewsRouter = require('./routers/viewsRouter');
 const productsRouter = require('./routers/productsRouter');
 const cartsRouter = require('./routers/cartsRouter');
-const authRouter = require('./routers/authRouter'); // Nuevo: authRouter para login/register
+const authRouter = require('./routers/authRouter'); // authRouter para login/register
 require('./config/passport')(passport); // Cargar estrategias de passport
 
 // Conectar a la base de datos
@@ -44,23 +44,23 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Middleware para crear un carrito si no existe en la sesión
-app.use(async (req, res, next) => {
-  if (!req.session.cartId) {
-    try {
-      const newCart = await Cart.create({ products: [] });
-      req.session.cartId = newCart._id.toString();
-      console.log('Nuevo carrito creado:', newCart._id);
-    } catch (error) {
-      console.error('Error al crear el carrito:', error);
-    }
-  }
-  next();
-});
+// app.use(async (req, res, next) => {
+//   if (!req.session.cartId) {
+//     try {
+//       const newCart = await Cart.create({ products: [] });
+//       req.session.cartId = newCart._id.toString();
+//       console.log('Nuevo carrito creado:', newCart._id);
+//     } catch (error) {
+//       console.error('Error al crear el carrito:', error);
+//     }
+//   }
+//   next();
+// });
 
 // Rutas
 app.use('/', viewsRouter);
-app.use('/products', productsRouter);
-app.use('/carts', cartsRouter);
+app.use('/api/products', productsRouter);
+app.use('/api/carts', cartsRouter);
 app.use('/api/auth', authRouter); // Nuevo: ruta para login, register, logout, current
 
 // Iniciar el servidor
