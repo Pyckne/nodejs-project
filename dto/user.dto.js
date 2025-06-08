@@ -8,3 +8,4 @@ class UserDTO {
     this.role = user.role;
   }
 }
+module.exports = UserDTO;
