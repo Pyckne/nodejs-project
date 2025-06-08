@@ -1,0 +1,30 @@
+{{#extend "main"}}
+
+{{#content "body"}}
+  <div style="max-width: 800px; margin: auto; padding: 2rem;">
+    <h1>👑 Panel de Administrador</h1>
+    <p>Bienvenido, {{user.first_name}} {{user.last_name}}</p>
+
+    {{#if (eq user.role "admin")}}
+      <hr />
+
+      <h2>Herramientas de administración</h2>
+
+      <ul style="line-height: 1.8;">
+        <li><a href="/realtimeproducts">🛠️ Gestión en tiempo real de productos</a></li>
+        <li><a href="/admin/users">👥 Ver usuarios registrados</a> (pendiente)</li>
+        <li><a href="/admin/create-product">➕ Crear nuevo producto</a> (pendiente)</li>
+        <li><a href="/home">🏠 Ir al home</a></li>
+      </ul>
+
+      <form action="/api/auth/signout" method="POST" style="margin-top: 2rem;">
+        <button type="submit">Cerrar sesión</button>
+      </form>
+
+    {{else}}
+      <p style="color: red;">Acceso denegado. Esta sección es solo para administradores.</p>
+    {{/if}}
+  </div>
+{{/content}}
+
+{{/extend}}

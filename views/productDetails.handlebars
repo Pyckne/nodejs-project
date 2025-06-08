@@ -1,30 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Productos</title>
+  <meta charset="UTF-8">
+  <title>Detalle del Producto</title>
 </head>
 
 <body>
-<!-- productDetails.handlebars -->
-<p>Cart id: {{cartId}}</p>
-<h1>{{product.title}}</h1>
-<p><strong>Precio:</strong> ${{product.price}}</p>
-<p><strong>Categoría:</strong> {{product.category}}</p>
-<p><strong>Descripción:</strong> {{product.description}}</p>
-<p><strong>Stock:</strong> {{product.stock}}</p>
+  <p>Cart ID: {{cartId}}</p>
 
-<!-- Botón para agregar al carrito -->
-<form id="addToCartForm" method="POST">
-  <button type="submit">Agregar al carrito</button>
-</form>
+  <h1>{{product.title}}</h1>
+  <p><strong>Precio:</strong> ${{product.price}}</p>
+  <p><strong>Categoría:</strong> {{product.category}}</p>
+  <p><strong>Descripción:</strong> {{product.description}}</p>
+  <p><strong>Stock:</strong> {{product.stock}}</p>
 
-
-<script>
-  document.getElementById('addToCartForm').action = '/carts/' + '{{cartId}}' + '/products/' + '{{product.id}}';
-</script>
+  {{#if (eq user.role "user")}}
+    <!-- Solo usuarios logueados como "user" pueden ver el botón -->
+    <form id="addToCartForm" method="POST">
+      <button type="submit">Agregar al carrito</button>
+    </form>
+    <script>
+      document.getElementById('addToCartForm').action =
+        '/carts/' + '{{cartId}}' + '/products/' + '{{product.id}}';
+    </script>
+  {{else if (eq user.role "admin")}}
+    <p style="color: red;">Los administradores no pueden agregar productos al carrito.</p>
+  {{else}}
+    <p style="color: red;">Debés iniciar sesión como usuario para comprar.</p>
+  {{/if}}
 </body>
-
 </html>

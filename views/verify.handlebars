@@ -1,0 +1,58 @@
+{{!-- Extiende el layout principal --}}
+{{#extend "main"}}
+
+{{#content "body"}}
+  <div style="max-width: 400px; margin: auto; padding: 2rem;">
+    <h2>🔐 Verificación de cuenta</h2>
+    <p>Te enviamos un código a tu email. Ingresalo para activar tu cuenta.</p>
+
+    <form id="verifyForm">
+      <label for="email">Email:</label><br />
+      <input type="email" id="email" name="email" required placeholder="ejemplo@correo.com" /><br /><br />
+
+      <label for="code">Código de verificación:</label><br />
+      <input type="text" id="code" name="code" required placeholder="Código recibido" /><br /><br />
+
+      <button type="submit">✅ Verificar cuenta</button>
+    </form>
+
+    <div id="message" style="margin-top: 20px;"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('verifyForm');
+    const messageDiv = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = form.email.value.trim();
+      const code = form.code.value.trim();
+
+      try {
+        const res = await fetch('/auth/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, code })
+        });
+
+        const data = await res.json();
+
+        messageDiv.style.fontWeight = 'bold';
+        messageDiv.textContent = data.message || 'Respuesta desconocida';
+
+        if (res.ok) {
+          messageDiv.style.color = 'green';
+          form.reset();
+        } else {
+          messageDiv.style.color = 'red';
+        }
+      } catch (error) {
+        messageDiv.style.color = 'red';
+        messageDiv.textContent = '❌ Error al enviar la solicitud';
+      }
+    });
+  </script>
+{{/content}}
+
+{{/extend}}

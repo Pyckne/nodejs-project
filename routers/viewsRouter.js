@@ -1,16 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const Productos = require('../models/Product');  // Modelo de productos
+const Productos = require('../models/Product');
 const Cart = require('../models/Cart');
+const authFromCookie = require('../middlewares/authFromCookie');
 
+// 🛡 Middleware que asigna el usuario desde el JWT en cookie
+router.use(authFromCookie);
+
+// Vista principal con productos
 router.get('/home', async (req, res) => {
   try {
     const filter = {};
     const options = { page: 1, limit: 10 };
     const products = await Productos.paginate(filter, options);
 
-    const cartId = req.session.cartId || ''; // Agregar || '' para evitar undefined
-    console.log('Cart ID en la vista home:', cartId);
+    const cartId = req.session.cartId || '';
+    const user = req.user;
+    const logoutMessage = req.query.logout === '1'; // ✅
 
     const productsModified = products.docs.map(product => ({
       id: product._id.toString(),
@@ -22,7 +28,9 @@ router.get('/home', async (req, res) => {
     }));
 
     res.render('home', {
+      user,
       cartId,
+      logoutMessage, // ✅
       products: productsModified,
       totalPages: products.totalPages,
       page: products.page,
@@ -37,18 +45,18 @@ router.get('/home', async (req, res) => {
   }
 });
 
-// Ruta para ver el detalle de un producto específico
+// Vista de detalles del producto
 router.get('/products/:pid', async (req, res) => {
   try {
     const productId = req.params.pid;
     const product = await Productos.findById(productId);
-    const cartId = req.session.cartId; // Obtener cartId de la sesión
+    const cartId = req.session.cartId;
+    const user = req.user;
 
-    if (!product) {
-      return res.status(404).send('Producto no encontrado');
-    }
+    if (!product) return res.status(404).send('Producto no encontrado');
 
     res.render('productDetails', {
+      user,
       product: {
         id: product._id,
         title: product.title,
@@ -57,7 +65,7 @@ router.get('/products/:pid', async (req, res) => {
         description: product.description,
         stock: product.stock,
       },
-      cartId, // Pasar cartId a la vista
+      cartId,
     });
   } catch (error) {
     console.error('Error al obtener el producto:', error);
@@ -65,20 +73,20 @@ router.get('/products/:pid', async (req, res) => {
   }
 });
 
-// Ruta para la vista "realTimeProducts"
+// Vista con productos en tiempo real
 router.get('/realtimeproducts', (req, res) => {
-  res.render('realTimeProducts');
+  const user = req.user;
+  res.render('realTimeProducts', { user });
 });
 
-// Ruta para ver los detalles de un carrito específico
+// Vista del carrito
 router.get('/carts/:cid', async (req, res) => {
   try {
     const { cid } = req.params;
     const cart = await Cart.findById(cid).populate('products.product');
+    const user = req.user;
 
-    if (!cart) {
-      return res.status(404).send('Carrito no encontrado');
-    }
+    if (!cart) return res.status(404).send('Carrito no encontrado');
 
     const productsModified = cart.products.map(item => ({
       title: item.product.title,
@@ -86,20 +94,30 @@ router.get('/carts/:cid', async (req, res) => {
       quantity: item.quantity,
     }));
 
-    res.render('cartDetails', { products: productsModified });
+    res.render('cartDetails', {
+      user,
+      products: productsModified
+    });
   } catch (error) {
     console.error('Error al obtener detalles del carrito:', error);
     res.status(500).send('Error al obtener detalles del carrito');
   }
 });
-// Vista de registro
-router.get('/register', (req, res) => {
-  res.render('register');
+
+// Vista del panel de administrador
+router.get('/admin', (req, res) => {
+  const user = req.user;
+
+  if (!user || user.role !== 'admin') {
+    return res.status(403).render('unauthorized', { user });
+  }
+
+  res.render('adminDashboard', { user });
 });
 
-// Vista de login
-router.get('/login', (req, res) => {
-  res.render('login');
-});
+// Registro / Login / Verificación
+router.get('/register', (req, res) => res.render('register'));
+router.get('/login', (req, res) => res.render('login'));
+router.get('/verify', (req, res) => res.render('verify'));
 
 module.exports = router;

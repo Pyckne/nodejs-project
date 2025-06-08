@@ -1,74 +1,72 @@
+require('dotenv').config(); // ✅ Cargar variables de entorno
 const express = require('express');
 const connectDB = require('./config/dbConfig');
 const { create } = require('express-handlebars');
 const path = require('path');
 const session = require('express-session');
-const cookieParser = require('cookie-parser'); // Necesario para JWT en cookies
+const cookieParser = require('cookie-parser');
 const passport = require('passport');
-const Cart = require('./models/Cart');
+const errorHandler = require('./middlewares/errorHandler');
+const pathHandler = require('./middlewares/pathHandler');
 
-// Importar routers
 const viewsRouter = require('./routers/viewsRouter');
 const productsRouter = require('./routers/productsRouter');
 const cartsRouter = require('./routers/cartsRouter');
-const authRouter = require('./routers/authRouter'); // authRouter para login/register
-require('./config/passport')(passport); // Cargar estrategias de passport
+const authRouter = require('./routers/authRouter');
+require('./config/passport')(passport); // Estrategias de passport
 
-// Conectar a la base de datos
 const app = express();
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 
+// 🔌 Conexión a MongoDB
 connectDB();
 
-// Configuración de Handlebars
-const handlebars = require('express-handlebars');
-const hbs = create({ extname: '.handlebars' });
+// 🔧 Configuración de Handlebars con helper y acceso a propiedades del prototipo
+const hbs = create({
+  extname: '.handlebars',
+  helpers: {
+    eq: (a, b) => a === b
+  },
+  runtimeOptions: {
+    allowProtoPropertiesByDefault: true,
+    allowProtoMethodsByDefault: true
+  }
+});
 app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'views'));
 
-// Middlewares
+// 📦 Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser());
 
 app.use(session({
-  secret: 'mySecret',
+  secret: process.env.SESSION_SECRET || 'mySecret',
   resave: false,
   saveUninitialized: true,
 }));
 
-// Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Middleware para crear un carrito si no existe en la sesión
-// app.use(async (req, res, next) => {
-//   if (!req.session.cartId) {
-//     try {
-//       const newCart = await Cart.create({ products: [] });
-//       req.session.cartId = newCart._id.toString();
-//       console.log('Nuevo carrito creado:', newCart._id);
-//     } catch (error) {
-//       console.error('Error al crear el carrito:', error);
-//     }
-//   }
-//   next();
-// });
-
-// Rutas
+// 🧭 Rutas
 app.use('/', viewsRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/carts', cartsRouter);
-app.use('/api/auth', authRouter); // Nuevo: ruta para login, register, logout, current
+app.use('/api/auth', authRouter);
 
-// Iniciar el servidor
+// 🛑 Middlewares de manejo de rutas no encontradas y errores globales
+app.use(pathHandler);
+app.use(errorHandler);
+
+// 🚀 Servidor
 const server = app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });
 
-// WebSocket con Socket.io
+// 🔄 WebSocket con Socket.io
 const { Server } = require('socket.io');
 const io = new Server(server);
 const Product = require('./models/Product');
@@ -86,7 +84,6 @@ io.on('connection', async (socket) => {
 
       const productosActualizados = await Product.find();
       io.emit('updateProducts', productosActualizados);
-      console.log(`Producto agregado: ${JSON.stringify(product)}`);
     } catch (error) {
       console.error('Error al agregar producto:', error);
     }
@@ -97,7 +94,6 @@ io.on('connection', async (socket) => {
       await Product.findByIdAndDelete(productId);
       const productosActualizados = await Product.find();
       io.emit('updateProducts', productosActualizados);
-      console.log(`Producto eliminado: ${productId}`);
     } catch (error) {
       console.error('Error al eliminar producto:', error);
     }

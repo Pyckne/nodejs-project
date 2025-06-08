@@ -1,5 +1,3 @@
-// utils/pagination.js
-
 module.exports = {
     paginationOptions: {
       limit: 10, // Valor predeterminado
@@ -7,4 +5,3 @@ module.exports = {
       sort: {},  // Sin orden predeterminado
     }
   };
-  

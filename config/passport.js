@@ -4,37 +4,53 @@ const { ExtractJwt } = require('passport-jwt');
 const User = require('../models/User');
 const { comparePassword } = require('../utils/hash');
 
-// Extrae el token desde las cookies
+// Función para extraer el token JWT desde las cookies
 const cookieExtractor = req => req.cookies?.token || null;
 
 module.exports = function (passport) {
-  // 🔐 Estrategia Local (login con email y contraseña)
+  // 🔐 Estrategia local para login
   passport.use('login', new LocalStrategy({
-    usernameField: 'email', // por defecto busca 'username', lo cambiamos a 'email'
+    usernameField: 'email',
     passwordField: 'password',
     session: false
   }, async (email, password, done) => {
     try {
+      // Busca al usuario por email
       const user = await User.findOne({ email });
-      if (!user) return done(null, false, { message: 'Usuario no encontrado' });
+      if (!user) {
+        return done(null, false, { message: 'Usuario no encontrado' });
+      }
 
+      // 🚫 Verifica si el usuario ha confirmado su cuenta por email
+      if (!user.verified) {
+        return done(null, false, { message: 'Cuenta no verificada. Por favor verifica tu correo electrónico.' });
+      }
+
+      // Compara la contraseña proporcionada con la almacenada
       const isValid = comparePassword(password, user.password);
-      if (!isValid) return done(null, false, { message: 'Contraseña incorrecta' });
+      if (!isValid) {
+        return done(null, false, { message: 'Contraseña incorrecta' });
+      }
 
+      // ✅ Si todo está correcto, retorna el usuario
       return done(null, user);
+
     } catch (error) {
+      // En caso de error del servidor
       return done(error);
     }
   }));
 
-  // 🪪 Estrategia JWT para verificar sesión a través del token en la cookie
+  // 🔐 Estrategia JWT para autenticación mediante token
   passport.use('jwt', new JwtStrategy({
     jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
-    secretOrKey: 'tu_clave_secreta' // 🔐 Esta clave debe coincidir con la usada en generateToken()
+    secretOrKey: process.env.JWT_SECRET
   }, async (jwtPayload, done) => {
     try {
       const user = await User.findById(jwtPayload.id);
-      if (!user) return done(null, false, { message: 'Usuario no encontrado con este token' });
+      if (!user) {
+        return done(null, false, { message: 'Token inválido' });
+      }
       return done(null, user);
     } catch (error) {
       return done(error, false);
