@@ -14,9 +14,21 @@ router.get('/home', async (req, res) => {
     const options = { page: 1, limit: 10 };
     const products = await Productos.paginate(filter, options);
 
-    const cartId = req.session.cartId || '';
     const user = req.user;
-    const logoutMessage = req.query.logout === '1'; // ✅
+    let cartId = req.session.cartId || '';
+
+    if (user && !cartId) {
+      // Buscar un carrito existente asociado al usuario
+      let cart = await Cart.findOne({ user_id: user._id });
+      if (!cart) {
+        // Crear carrito si no existe
+        cart = await Cart.create({ user_id: user._id, products: [] });
+      }
+      cartId = cart._id.toString();
+      req.session.cartId = cartId; // Persistir en sesión
+    }
+
+    const logoutMessage = req.query.logout === '1';
 
     const productsModified = products.docs.map(product => ({
       id: product._id.toString(),
@@ -30,7 +42,7 @@ router.get('/home', async (req, res) => {
     res.render('home', {
       user,
       cartId,
-      logoutMessage, // ✅
+      logoutMessage,
       products: productsModified,
       totalPages: products.totalPages,
       page: products.page,
@@ -96,6 +108,7 @@ router.get('/carts/:cid', async (req, res) => {
 
     res.render('cartDetails', {
       user,
+      cartId: cart._id.toString(),
       products: productsModified
     });
   } catch (error) {

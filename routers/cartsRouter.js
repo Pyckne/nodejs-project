@@ -4,7 +4,6 @@ const Product = require('../models/Product');
 const passport = require('passport');
 const { authorizeRole } = require('../middlewares/auth');
 const CartDTO = require('../dto/cart.dto');
-const Ticket = require('../models/Ticket');
 const { v4: uuidv4 } = require('uuid');
 const ticketRepository = require('../repositories/ticket.repository');
 const TicketDTO = require('../dto/ticket.dto');
@@ -12,7 +11,6 @@ const authFromCookie = require('../middlewares/authFromCookie');
 
 const router = express.Router();
 
-// 🔐 Middleware que asigna req.user desde el token JWT en la cookie
 router.use(authFromCookie);
 
 // POST Crear un nuevo carrito
@@ -48,8 +46,8 @@ router.post('/:cid/products/:pid',
   async (req, res) => {
     try {
       const { cid, pid } = req.params;
-
       let cart = await Cart.findById(cid);
+
       if (!cart) {
         cart = await Cart.create({
           _id: cid,
@@ -85,14 +83,10 @@ router.delete('/:cid/products/:pid', async (req, res) => {
     const cart = await Cart.findById(cid);
     if (!cart) return res.status(404).json({ message: 'Carrito no encontrado' });
 
-    const index = cart.products.findIndex(p => p.product.toString() === pid);
-    if (index !== -1) {
-      cart.products.splice(index, 1);
-      await cart.save();
-      return res.redirect(`/carts/${cid}`);
-    } else {
-      return res.status(404).json({ message: 'Producto no encontrado en el carrito' });
-    }
+    cart.products = cart.products.filter(p => p.product.toString() !== pid);
+    await cart.save();
+
+    res.redirect(`/carts/${cid}`);
   } catch (error) {
     console.error('Error al eliminar producto del carrito:', error);
     res.status(500).json({ message: 'Error al eliminar producto del carrito' });
@@ -119,15 +113,20 @@ router.put('/:cid', async (req, res) => {
   }
 });
 
-// POST Comprar productos del carrito
+// ✅ POST Comprar productos del carrito con ticketRepository
 router.post('/:cid/purchase',
   passport.authenticate('jwt', { session: false }),
   authorizeRole('user'),
   async (req, res) => {
     try {
       const { cid } = req.params;
+      console.log('🔍 Iniciando proceso de compra para carrito:', cid);
+
       const cart = await Cart.findById(cid).populate('products.product');
-      if (!cart) return res.status(404).json({ message: 'Carrito no encontrado' });
+      if (!cart) {
+        console.warn('❌ Carrito no encontrado');
+        return res.status(404).json({ message: 'Carrito no encontrado' });
+      }
 
       let totalAmount = 0;
       const productsNotProcessed = [];
@@ -135,6 +134,7 @@ router.post('/:cid/purchase',
 
       for (const item of cart.products) {
         const product = item.product;
+        console.log(`📦 Procesando producto: ${product.title} (stock: ${product.stock}, solicitado: ${item.quantity})`);
 
         if (product.stock >= item.quantity) {
           product.stock -= item.quantity;
@@ -143,35 +143,43 @@ router.post('/:cid/purchase',
           totalAmount += product.price * item.quantity;
           purchasedProducts.push(item);
         } else {
+          console.warn(`⚠️ Stock insuficiente para: ${product.title}`);
           productsNotProcessed.push(product._id);
         }
       }
 
       if (purchasedProducts.length > 0) {
-        const ticket = await Ticket.create({
-          code: uuidv4(),
+        const ticketPayload = {
+          code: uuidv4(), // Asegura UUID manual
           amount: totalAmount,
           purchaser: req.user.email
-        });
+        };
+
+        console.log('🎫 Datos del ticket a crear:', ticketPayload);
+
+        const ticket = await ticketRepository.create(ticketPayload); // <--- aquí va a pasar por el DTO
 
         cart.products = cart.products.filter(item =>
-          !purchasedProducts.find(p => p.product._id.equals(item.product._id))
+          !purchasedProducts.some(p => p.product._id.equals(item.product._id))
         );
         await cart.save();
 
+        console.log('✅ Compra procesada. Ticket generado:', ticket.code);
+
         return res.status(200).json({
           message: 'Compra procesada parcialmente',
-          ticket: new TicketDTO(ticket),
+          ticket,
           noStockProducts: productsNotProcessed
         });
       } else {
+        console.warn('❌ Ningún producto con stock suficiente');
         return res.status(400).json({
           message: 'No hay productos con stock suficiente',
           noStockProducts: productsNotProcessed
         });
       }
     } catch (error) {
-      console.error('Error en la compra:', error);
+      console.error('❌ Error en la compra:', error);
       res.status(500).json({ message: 'Error al procesar la compra' });
     }
   }

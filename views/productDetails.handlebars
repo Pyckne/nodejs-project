@@ -21,7 +21,7 @@
     </form>
     <script>
       document.getElementById('addToCartForm').action =
-        '/carts/' + '{{cartId}}' + '/products/' + '{{product.id}}';
+        '/api/carts/{{cartId}}/products/{{product.id}}';
     </script>
   {{else if (eq user.role "admin")}}
     <p style="color: red;">Los administradores no pueden agregar productos al carrito.</p>

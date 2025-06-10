@@ -25,7 +25,11 @@ connectDB();
 const hbs = create({
   extname: '.handlebars',
   helpers: {
-    eq: (a, b) => a === b
+    eq: (a, b) => a === b,
+    multiply: (a, b) => a * b,
+    calculateTotal: (products) => {
+      return products.reduce((acc, p) => acc + (p.price * p.quantity), 0);
+    }
   },
   runtimeOptions: {
     allowProtoPropertiesByDefault: true,

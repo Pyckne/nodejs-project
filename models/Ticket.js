@@ -4,7 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const ticketSchema = new mongoose.Schema({
   code: {
     type: String,
-    default: uuidv4, // Genera un UUID único
+    default: uuidv4,
     unique: true
   },
   purchase_datetime: {
@@ -16,7 +16,7 @@ const ticketSchema = new mongoose.Schema({
     required: true
   },
   purchaser: {
-    type: String, // Se guarda el email del usuario
+    type: String,
     required: true
   }
 });

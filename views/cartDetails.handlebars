@@ -1,14 +1,45 @@
-<!-- cartDetails.handlebars -->
 <h1>Detalles del Carrito</h1>
 
-<ul>
-  {{#each products}}
-    <li>
-      <h2>{{title}}</h2>
-      <p>Precio: ${{price}}</p>
-      <p>Cantidad: {{quantity}}</p>
-    </li>
-  {{/each}}
-</ul>
+{{#if products.length}}
+  <ul>
+    {{#each products}}
+      <li>
+        <h2>{{title}}</h2>
+        <p>Precio: ${{price}}</p>
+        <p>Cantidad: {{quantity}}</p>
+        <p>Subtotal: ${{multiply price quantity}}</p>
 
-<a href="/home">Volver a la tienda</a>
+        <form action="/api/carts/{{../cartId}}/products/{{id}}" method="POST" onsubmit="return confirm('¿Eliminar este producto del carrito?')">
+          <input type="hidden" name="_method" value="DELETE">
+          <button type="submit">Eliminar</button>
+        </form>
+      </li>
+    {{/each}}
+  </ul>
+
+  <h3>Total: ${{calculateTotal products}}</h3>
+
+  <form action="/api/carts/{{cartId}}/purchase" method="POST">
+    <button type="submit" style="margin-top: 20px;">Finalizar Compra</button>
+  </form>
+{{else}}
+  <p>Tu carrito está vacío.</p>
+{{/if}}
+
+<a href="/home">← Volver a la tienda</a>
+
+<script>
+  // Método override para DELETE usando fetch
+  document.querySelectorAll('form input[name="_method"][value="DELETE"]').forEach(input => {
+    const form = input.closest('form');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      fetch(form.action, {
+        method: 'DELETE'
+      })
+        .then(res => res.redirected ? window.location.href = res.url : location.reload())
+        .catch(err => console.error('Error eliminando producto:', err));
+    });
+  });
+</script>

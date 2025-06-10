@@ -47,7 +47,7 @@
         <a href="/products/{{id}}">Ver detalles</a>
 
         {{#if (eq ../user.role "user")}}
-          <form action="/carts/{{../cartId}}/products/{{id}}" method="POST">
+          <form action="/api/carts/{{../cartId}}/products/{{id}}" method="POST">
             <button type="submit">Agregar al carrito</button>
           </form>
         {{/if}}
