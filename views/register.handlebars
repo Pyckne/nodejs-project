@@ -1,12 +1,51 @@
-<h1>Registro</h1>
+<section class="section">
+  <div class="container" style="max-width: 500px;">
+    <h1 class="title is-3 has-text-centered">Crear Cuenta</h1>
 
-<form action="/api/auth/register" method="POST">
-  <input type="text" name="first_name" placeholder="Nombre" required />
-  <input type="text" name="last_name" placeholder="Apellido" required />
-  <input type="email" name="email" placeholder="Email" required />
-  <input type="number" name="age" placeholder="Edad" />
-  <input type="password" name="password" placeholder="Contraseña" required />
-  <button type="submit">Registrarse</button>
-</form>
+    <form action="/api/auth/register" method="POST" class="box">
+      <div class="field">
+        <label class="label">Nombre</label>
+        <div class="control">
+          <input class="input" type="text" name="first_name" placeholder="Tu nombre" required />
+        </div>
+      </div>
 
-<a href="/login">¿Ya tenés cuenta? Iniciar sesión</a>
+      <div class="field">
+        <label class="label">Apellido</label>
+        <div class="control">
+          <input class="input" type="text" name="last_name" placeholder="Tu apellido" required />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Email</label>
+        <div class="control">
+          <input class="input" type="email" name="email" placeholder="tu@email.com" required />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Edad</label>
+        <div class="control">
+          <input class="input" type="number" name="age" placeholder="Edad" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Contraseña</label>
+        <div class="control">
+          <input class="input" type="password" name="password" placeholder="••••••••" required />
+        </div>
+      </div>
+
+      <div class="field is-grouped is-grouped-centered">
+        <div class="control">
+          <button class="button is-primary" type="submit">Registrarse</button>
+        </div>
+        <div class="control">
+          <a href="/login" class="button is-light">Iniciar sesión</a>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>

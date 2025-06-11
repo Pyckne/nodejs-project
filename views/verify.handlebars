@@ -1,58 +1,68 @@
-{{!-- Extiende el layout principal --}}
-{{#extend "main"}}
+<section class="section">
+  <div class="container" style="max-width: 500px;">
+    <h1 class="title is-3 has-text-centered">🔐 Verificación de Cuenta</h1>
+    <p class="has-text-centered mb-5">
+      Ingresá el código que te enviamos por email para activar tu cuenta.
+    </p>
 
-{{#content "body"}}
-  <div style="max-width: 400px; margin: auto; padding: 2rem;">
-    <h2>🔐 Verificación de cuenta</h2>
-    <p>Te enviamos un código a tu email. Ingresalo para activar tu cuenta.</p>
+    <form id="verifyForm" class="box">
+      <div class="field">
+        <label class="label">Email</label>
+        <div class="control">
+          <input class="input" type="email" id="email" name="email" placeholder="ejemplo@correo.com" required />
+        </div>
+      </div>
 
-    <form id="verifyForm">
-      <label for="email">Email:</label><br />
-      <input type="email" id="email" name="email" required placeholder="ejemplo@correo.com" /><br /><br />
+      <div class="field">
+        <label class="label">Código de verificación</label>
+        <div class="control">
+          <input class="input" type="text" id="code" name="code" placeholder="Código recibido" required />
+        </div>
+      </div>
 
-      <label for="code">Código de verificación:</label><br />
-      <input type="text" id="code" name="code" required placeholder="Código recibido" /><br /><br />
-
-      <button type="submit">✅ Verificar cuenta</button>
+      <div class="field is-grouped is-grouped-centered">
+        <div class="control">
+          <button type="submit" class="button is-success">✅ Verificar cuenta</button>
+        </div>
+      </div>
     </form>
 
-    <div id="message" style="margin-top: 20px;"></div>
+    <div id="message" class="has-text-centered mt-4 has-text-weight-semibold"></div>
   </div>
+</section>
 
-  <script>
-    const form = document.getElementById('verifyForm');
-    const messageDiv = document.getElementById('message');
+<script>
+  const form = document.getElementById('verifyForm');
+  const messageDiv = document.getElementById('message');
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-      const email = form.email.value.trim();
-      const code = form.code.value.trim();
+    const email = form.email.value.trim();
+    const code = form.code.value.trim();
 
-      try {
-        const res = await fetch('/auth/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, code })
-        });
+    try {
+      const res = await fetch('/auth/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code })
+      });
 
-        const data = await res.json();
+      const data = await res.json();
+      messageDiv.textContent = data.message || 'Respuesta desconocida';
 
-        messageDiv.style.fontWeight = 'bold';
-        messageDiv.textContent = data.message || 'Respuesta desconocida';
-
-        if (res.ok) {
-          messageDiv.style.color = 'green';
-          form.reset();
-        } else {
-          messageDiv.style.color = 'red';
-        }
-      } catch (error) {
-        messageDiv.style.color = 'red';
-        messageDiv.textContent = '❌ Error al enviar la solicitud';
+      if (res.ok) {
+        messageDiv.classList.remove('has-text-danger');
+        messageDiv.classList.add('has-text-success');
+        form.reset();
+      } else {
+        messageDiv.classList.remove('has-text-success');
+        messageDiv.classList.add('has-text-danger');
       }
-    });
-  </script>
-{{/content}}
-
-{{/extend}}
+    } catch (error) {
+      messageDiv.textContent = '❌ Error al enviar la solicitud';
+      messageDiv.classList.remove('has-text-success');
+      messageDiv.classList.add('has-text-danger');
+    }
+  });
+</script>

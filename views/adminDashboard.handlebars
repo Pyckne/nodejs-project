@@ -1,30 +1,27 @@
-{{#extend "main"}}
-
-{{#content "body"}}
-  <div style="max-width: 800px; margin: auto; padding: 2rem;">
-    <h1>👑 Panel de Administrador</h1>
-    <p>Bienvenido, {{user.first_name}} {{user.last_name}}</p>
+<section class="section">
+  <div class="container" style="max-width: 800px;">
+    <h1 class="title is-3">👑 Panel de Administrador</h1>
+    <p class="subtitle is-5">Bienvenido, {{user.first_name}} {{user.last_name}}</p>
 
     {{#if (eq user.role "admin")}}
-      <hr />
+      <div class="box">
+        <h2 class="title is-5">🛠 Herramientas de administración</h2>
 
-      <h2>Herramientas de administración</h2>
+        <div class="buttons is-flex-direction-column is-align-items-flex-start">
+          <a class="button is-light is-link" href="/realtimeproducts">🛠️ Gestión en tiempo real de productos</a>
+          <a class="button is-light is-info is-disabled" href="/admin/users">👥 Ver usuarios registrados (pendiente)</a>
+          <a class="button is-light is-info is-disabled" href="/admin/create-product">➕ Crear nuevo producto (pendiente)</a>
+          <a class="button is-light" href="/home">🏠 Ir al home</a>
+        </div>
 
-      <ul style="line-height: 1.8;">
-        <li><a href="/realtimeproducts">🛠️ Gestión en tiempo real de productos</a></li>
-        <li><a href="/admin/users">👥 Ver usuarios registrados</a> (pendiente)</li>
-        <li><a href="/admin/create-product">➕ Crear nuevo producto</a> (pendiente)</li>
-        <li><a href="/home">🏠 Ir al home</a></li>
-      </ul>
-
-      <form action="/api/auth/signout" method="POST" style="margin-top: 2rem;">
-        <button type="submit">Cerrar sesión</button>
-      </form>
-
+        <form action="/api/auth/signout" method="POST" class="mt-4">
+          <button type="submit" class="button is-danger is-light">Cerrar sesión</button>
+        </form>
+      </div>
     {{else}}
-      <p style="color: red;">Acceso denegado. Esta sección es solo para administradores.</p>
+      <div class="notification is-danger is-light">
+        ⚠️ Acceso denegado. Esta sección está restringida a administradores.
+      </div>
     {{/if}}
   </div>
-{{/content}}
-
-{{/extend}}
+</section>

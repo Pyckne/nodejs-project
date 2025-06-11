@@ -1,39 +1,42 @@
-<h1>Detalles del Carrito</h1>
+<section class="section">
+  <div class="container">
+    <h1 class="title is-3">🛒 Detalles del Carrito</h1>
 
-{{#if products.length}}
-  <ul>
-    {{#each products}}
-      <li>
-        <h2>{{title}}</h2>
-        <p>Precio: ${{price}}</p>
-        <p>Cantidad: {{quantity}}</p>
-        <p>Subtotal: ${{multiply price quantity}}</p>
+    {{#if products.length}}
+      <ul>
+        {{#each products}}
+          <li class="box">
+            <h2 class="subtitle">{{title}}</h2>
+            <p><strong>Precio:</strong> ${{price}}</p>
+            <p><strong>Cantidad:</strong> {{quantity}}</p>
+            <p><strong>Subtotal:</strong> ${{multiply price quantity}}</p>
 
-        <form action="/api/carts/{{../cartId}}/products/{{id}}" method="POST" onsubmit="return confirm('¿Eliminar este producto del carrito?')">
-          <input type="hidden" name="_method" value="DELETE">
-          <button type="submit">Eliminar</button>
-        </form>
-      </li>
-    {{/each}}
-  </ul>
+            <form action="/api/carts/{{../cartId}}/products/{{id}}" method="POST" class="delete-form">
+              <button class="button is-danger is-small" type="submit">Eliminar</button>
+            </form>
+          </li>
+        {{/each}}
+      </ul>
 
-  <h3>Total: ${{calculateTotal products}}</h3>
+      <h3 class="title is-4">💰 Total: ${{calculateTotal products}}</h3>
 
-  <form action="/api/carts/{{cartId}}/purchase" method="POST">
-    <button type="submit" style="margin-top: 20px;">Finalizar Compra</button>
-  </form>
-{{else}}
-  <p>Tu carrito está vacío.</p>
-{{/if}}
+      <form action="/api/carts/{{cartId}}/purchase" method="POST">
+        <button class="button is-success" type="submit">Finalizar Compra</button>
+      </form>
+    {{else}}
+      <div class="notification is-warning">Tu carrito está vacío.</div>
+    {{/if}}
 
-<a href="/home">← Volver a la tienda</a>
+    <a class="button is-light" href="/home" style="margin-top: 1rem;">← Volver a la tienda</a>
+  </div>
+</section>
 
 <script>
-  // Método override para DELETE usando fetch
-  document.querySelectorAll('form input[name="_method"][value="DELETE"]').forEach(input => {
-    const form = input.closest('form');
+  // Interceptar envío para realizar DELETE vía fetch
+  document.querySelectorAll('.delete-form').forEach(form => {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
+      if (!confirm('¿Eliminar este producto del carrito?')) return;
 
       fetch(form.action, {
         method: 'DELETE'

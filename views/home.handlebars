@@ -1,68 +1,46 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Lista de Productos</title>
-</head>
-<body>
-  {{#if logoutMessage}}
-    <div style="background: #e0ffe0; color: green; padding: 10px; margin-bottom: 1rem;">
-      Sesión cerrada correctamente.
+<section class="section">
+  <div class="container">
+    {{#if logoutMessage}}
+      <div class="notification is-success">Sesión cerrada correctamente.</div>
+    {{/if}}
+
+    <h1 class="title">🛍 Productos disponibles</h1>
+
+    <div class="columns is-multiline">
+      {{#each products}}
+        <div class="column is-one-quarter">
+          <div class="card">
+            <div class="card-content">
+              <p class="title is-5">{{title}}</p>
+              <p><strong>Precio:</strong> ${{price}}</p>
+              <p><strong>Categoría:</strong> {{category}}</p>
+              <p><strong>Descripción:</strong> {{description}}</p>
+              <p><strong>Stock:</strong> {{stock}}</p>
+            </div>
+            <footer class="card-footer">
+              <a href="/products/{{id}}" class="card-footer-item">Ver</a>
+              {{#if (eq ../user.role "user")}}
+                <form class="card-footer-item" action="/api/carts/{{../cartId}}/products/{{id}}" method="POST">
+                  <button class="button is-small is-success" type="submit">Agregar</button>
+                </form>
+              {{/if}}
+            </footer>
+          </div>
+        </div>
+      {{/each}}
     </div>
-  {{/if}}
 
-  {{#if user}}
-    <p>Bienvenido, {{user.first_name}}!</p>
-
-    <form action="/api/auth/signout" method="POST">
-      <button type="submit">Cerrar sesión</button>
-    </form>
-
-    {{#if (eq user.role "admin")}}
-      <p><strong>Rol: Administrador</strong></p>
-      <p style="color:green;">Tenés permisos para crear, editar y eliminar productos.</p>
-    {{else}}
-      <p><strong>Rol: Usuario</strong></p>
-    {{/if}}
-  {{else}}
-    <p><strong>¡No estás logueado!</strong></p>
-    <a href="/login">Iniciar sesión</a> |
-    <a href="/register">Registrarse</a>
-  {{/if}}
-
-  <h1>Productos</h1>
-
-  {{#if user}}
-    <p>Cart ID: {{cartId}}</p>
-  {{/if}}
-
-  <div class="product-list">
-    {{#each products}}
-      <div class="product">
-        <h2>{{title}}</h2>
-        <p>Precio: ${{price}}</p>
-        <p>Categoría: {{category}}</p>
-        <p>Descripción: {{description}}</p>
-        <p>Stock: {{stock}}</p>
-        <a href="/products/{{id}}">Ver detalles</a>
-
-        {{#if (eq ../user.role "user")}}
-          <form action="/api/carts/{{../cartId}}/products/{{id}}" method="POST">
-            <button type="submit">Agregar al carrito</button>
-          </form>
-        {{/if}}
-      </div>
-    {{/each}}
+    <!-- Paginación -->
+    <nav class="pagination is-centered mt-4" role="navigation" aria-label="pagination">
+      {{#if hasPrevPage}}
+        <a class="pagination-previous" href="/home?page={{prevPage}}&limit=10">Anterior</a>
+      {{/if}}
+      {{#if hasNextPage}}
+        <a class="pagination-next" href="/home?page={{nextPage}}&limit=10">Siguiente</a>
+      {{/if}}
+      <ul class="pagination-list">
+        <li><span class="pagination-link is-current">Página {{page}} de {{totalPages}}</span></li>
+      </ul>
+    </nav>
   </div>
-
-  <div class="pagination">
-    {{#if hasPrevPage}}
-      <a href="/products?page={{prevPage}}&limit=10">Página anterior</a>
-    {{/if}}
-    <span>Página {{page}} de {{totalPages}}</span>
-    {{#if hasNextPage}}
-      <a href="/products?page={{nextPage}}&limit=10">Página siguiente</a>
-    {{/if}}
-  </div>
-</body>
-</html>
+</section>

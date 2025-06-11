@@ -1,19 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{title}}</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
 </head>
 <body>
-    <header>
-        <h1>{{title}}</h1>
-    </header>
+  <!-- ✅ Navbar global -->
+  <nav class="navbar is-light" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="/home"><strong>Misha Clothing</strong></a>
+    </div>
 
-    {{{body}}} <!-- Aquí Handlebars renderizará el contenido de las vistas -->
+    <div class="navbar-menu">
+      <div class="navbar-start">
+        {{#if user}}
+          {{#if (eq user.role "admin")}}
+            <a class="navbar-item" href="/realtimeproducts">🔧 Admin Products</a>
+            <a class="navbar-item" href="/admin">📊 Panel Admin</a>
+          {{else}}
+            <a class="navbar-item" href="/carts/{{cartId}}">🛒 Mi Carrito</a>
+          {{/if}}
+        {{/if}}
+      </div>
 
-    <footer>
-        <p>Todos los derechos reservados - 2024</p>
-    </footer>
+      <div class="navbar-end">
+        {{#if user}}
+          <div class="navbar-item">Hola, {{user.first_name}}</div>
+          <form class="navbar-item" action="/api/auth/signout" method="POST">
+            <button class="button is-danger is-light" type="submit">Cerrar sesión</button>
+          </form>
+        {{else}}
+          <div class="navbar-item">
+            <a class="button is-primary" href="/login">Iniciar sesión</a>
+            <a class="button is-light ml-2" href="/register">Registrarse</a>
+          </div>
+        {{/if}}
+      </div>
+    </div>
+  </nav>
+
+  <!-- 💡 Contenido dinámico de cada vista -->
+  {{{body}}}
+
+  <footer class="footer has-text-centered mt-6">
+    <p>© 2025 Misha Clothing. Todos los derechos reservados.</p>
+  </footer>
 </body>
 </html>

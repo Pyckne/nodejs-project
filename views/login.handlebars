@@ -1,9 +1,30 @@
-<h1>Login</h1>
+<section class="section">
+  <div class="container" style="max-width: 400px;">
+    <h1 class="title is-3 has-text-centered">Iniciar Sesión</h1>
 
-<form action="/api/auth/login" method="POST">
-  <input type="email" name="email" placeholder="Email" required />
-  <input type="password" name="password" placeholder="Contraseña" required />
-  <button type="submit">Iniciar sesión</button>
-</form>
+    <form action="/api/auth/login" method="POST" class="box">
+      <div class="field">
+        <label class="label">Email</label>
+        <div class="control">
+          <input class="input" type="email" name="email" placeholder="tu@email.com" required />
+        </div>
+      </div>
 
-<a href="/register">¿No tenés cuenta? Registrate</a>
+      <div class="field">
+        <label class="label">Contraseña</label>
+        <div class="control">
+          <input class="input" type="password" name="password" placeholder="••••••••" required />
+        </div>
+      </div>
+
+      <div class="field is-grouped is-grouped-centered">
+        <div class="control">
+          <button class="button is-primary" type="submit">Ingresar</button>
+        </div>
+        <div class="control">
+          <a href="/register" class="button is-light">Registrarse</a>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>

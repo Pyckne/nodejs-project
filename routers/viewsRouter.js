@@ -11,7 +11,9 @@ router.use(authFromCookie);
 router.get('/home', async (req, res) => {
   try {
     const filter = {};
-    const options = { page: 1, limit: 10 };
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const options = { page, limit };
     const products = await Productos.paginate(filter, options);
 
     const user = req.user;
@@ -101,6 +103,7 @@ router.get('/carts/:cid', async (req, res) => {
     if (!cart) return res.status(404).send('Carrito no encontrado');
 
     const productsModified = cart.products.map(item => ({
+      id: item.product._id.toString(),
       title: item.product.title,
       price: item.product.price,
       quantity: item.quantity,

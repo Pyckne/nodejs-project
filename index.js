@@ -76,7 +76,6 @@ const io = new Server(server);
 const Product = require('./models/Product');
 
 io.on('connection', async (socket) => {
-  console.log('Cliente conectado');
 
   const productos = await Product.find();
   socket.emit('updateProducts', productos);

@@ -1,97 +1,20 @@
-{{#extend "main"}}
+<h1 class="title is-3">{{product.title}}</h1>
 
-{{#content "body"}}
-  <div style="max-width: 800px; margin: auto; padding: 2rem;">
-    <h1>📦 Productos en Tiempo Real</h1>
+<div class="box">
+  <p><strong>Precio:</strong> ${{product.price}}</p>
+  <p><strong>Categoría:</strong> {{product.category}}</p>
+  <p><strong>Descripción:</strong> {{product.description}}</p>
+  <p><strong>Stock disponible:</strong> {{product.stock}}</p>
 
-    <ul id="product-list">
-      {{#each productos}}
-        <li id="product-{{this._id}}">
-          <strong>{{this.title}}</strong> - ${{this.price}} - Stock: {{this.stock}} - Categoría: {{this.category}}  
-          <br>ID: <code>{{this._id}}</code>
-          {{#if this.thumbnails.length}}
-            <br><img src="{{this.thumbnails.[0]}}" alt="Thumbnail" style="width: 100px; margin-top: 5px;" />
-          {{/if}}
-        </li>
-      {{/each}}
-    </ul>
+  {{#if product.thumbnails.length}}
+    <div style="margin-top: 1rem;">
+      <img src="{{product.thumbnails.[0]}}" alt="Imagen del producto" style="max-width: 300px;">
+    </div>
+  {{/if}}
+</div>
 
-    {{#if (eq user.role "admin")}}
-      <hr />
-
-      <h2>➕ Agregar nuevo producto</h2>
-      <form id="add-product-form">
-        <input type="text" id="title" placeholder="Título" required>
-        <input type="text" id="description" placeholder="Descripción" required>
-        <input type="text" id="code" placeholder="Código único" required>
-        <input type="number" id="price" placeholder="Precio" required>
-        <input type="number" id="stock" placeholder="Stock" required>
-        <input type="text" id="category" placeholder="Categoría" required>
-        <input type="text" id="thumbnails" placeholder="URL de imagen (opcional)">
-        <button type="submit">Crear producto</button>
-      </form>
-
-      <h2>🗑️ Eliminar producto</h2>
-      <form id="delete-product-form">
-        <input type="text" id="delete-product-id" placeholder="ID del producto a eliminar" required>
-        <button type="submit">Eliminar producto</button>
-      </form>
-    {{else}}
-      <p style="color: red;">⚠️ Solo los administradores pueden agregar o eliminar productos.</p>
-    {{/if}}
-  </div>
-
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
-    const socket = io();
-
-    socket.on('updateProducts', (productos) => {
-      const productList = document.getElementById('product-list');
-      productList.innerHTML = '';
-      productos.forEach(product => {
-        const li = document.createElement('li');
-        li.id = `product-${product._id}`;
-        li.innerHTML = `
-          <strong>${product.title}</strong> - $${product.price} - Stock: ${product.stock} - Categoría: ${product.category}
-          <br>ID: <code>${product._id}</code>
-          ${product.thumbnails && product.thumbnails.length > 0
-            ? `<br><img src="${product.thumbnails[0]}" alt="Thumbnail" style="width: 100px; margin-top: 5px;" />`
-            : ''}
-        `;
-        productList.appendChild(li);
-      });
-    });
-
-    const formAdd = document.getElementById('add-product-form');
-    if (formAdd) {
-      formAdd.addEventListener('submit', function (event) {
-        event.preventDefault();
-        const newProduct = {
-          title: document.getElementById('title').value,
-          description: document.getElementById('description').value,
-          code: document.getElementById('code').value,
-          price: parseFloat(document.getElementById('price').value),
-          stock: parseInt(document.getElementById('stock').value),
-          category: document.getElementById('category').value,
-          thumbnails: document.getElementById('thumbnails').value
-            ? [document.getElementById('thumbnails').value]
-            : []
-        };
-        socket.emit('addProduct', newProduct);
-        formAdd.reset();
-      });
-    }
-
-    const formDelete = document.getElementById('delete-product-form');
-    if (formDelete) {
-      formDelete.addEventListener('submit', function (event) {
-        event.preventDefault();
-        const productId = document.getElementById('delete-product-id').value;
-        socket.emit('deleteProduct', productId);
-        formDelete.reset();
-      });
-    }
-  </script>
-{{/content}}
-
-{{/extend}}
+{{#if (eq user.role "user")}}
+  <form action="/api/carts/{{cartId}}/products/{{product.id}}" method="POST">
+    <button type="submit" class="button is-success">Agregar al carrito</button>
+  </form>
+{{/if}}
